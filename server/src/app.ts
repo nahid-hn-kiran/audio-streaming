@@ -5,6 +5,8 @@ import { auth } from "./auth.js";
 import { env } from "./config/env.js";
 import { authRouter } from "./routes/auth.js";
 import { authRateLimit } from "./middleware/rate-limit.js";
+import { catalogRouter } from "./routes/catalog.js";
+import { adminCatalogRouter } from "./routes/admin-catalog.js";
 
 export const app = express();
 
@@ -24,4 +26,11 @@ app.get("/health", (_request, response) => {
   response.status(200).json({ status: "ok" });
 });
 
+app.use("/api/v1", catalogRouter);
+app.use("/api/v1/admin", adminCatalogRouter);
 app.use("/api", authRouter);
+
+app.use((_error: unknown, _request: express.Request, response: express.Response, _next: express.NextFunction) => {
+  void _next;
+  response.status(500).json({ error: { code: "INTERNAL_ERROR", message: "Internal server error" } });
+});
