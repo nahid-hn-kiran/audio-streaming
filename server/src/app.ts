@@ -10,6 +10,7 @@ import { adminCatalogRouter } from "./routes/admin-catalog.js";
 import { mediaRouter } from "./routes/media.js";
 import { playlistsRouter } from "./routes/playlists.js";
 import { likesHistoryRouter } from "./routes/likes-history.js";
+import { uploadRateLimit } from "./middleware/rate-limit.js";
 
 export const app = express();
 
@@ -31,6 +32,8 @@ app.get("/health", (_request, response) => {
 
 app.use("/api/v1", catalogRouter);
 app.use("/api/v1/admin", adminCatalogRouter);
+app.use("/api/v1/admin/tracks/:id/audio/upload", uploadRateLimit);
+app.use("/api/v1/admin/uploads/:id/complete", uploadRateLimit);
 app.use("/api/v1", mediaRouter);
 app.use("/api/v1/playlists", playlistsRouter);
 app.use("/api/v1", likesHistoryRouter);
@@ -38,5 +41,6 @@ app.use("/api", authRouter);
 
 app.use((_error: unknown, _request: express.Request, response: express.Response, _next: express.NextFunction) => {
   void _next;
+  console.error("Unhandled request failure", { error: _error instanceof Error ? _error.name : "UnknownError", method: _request.method, path: _request.path, timestamp: new Date().toISOString() });
   response.status(500).json({ error: { code: "INTERNAL_ERROR", message: "Internal server error" } });
 });

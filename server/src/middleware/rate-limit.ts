@@ -3,6 +3,7 @@ import type { NextFunction, Request, Response } from "express";
 const WINDOW_MS = 60_000;
 const MAX_ATTEMPTS = 10;
 const attempts = new Map<string, { count: number; resetAt: number }>();
+const uploadAttempts = new Map<string, { count: number; resetAt: number }>();
 const protectedOperations = new Set([
   "/sign-up/email",
   "/sign-in/email",
@@ -13,6 +14,7 @@ const protectedOperations = new Set([
 function clientKey(request: Request): string {
   return request.ip ?? request.socket.remoteAddress ?? "unknown";
 }
+
 
 export function authRateLimit(request: Request, response: Response, next: NextFunction): void {
   if (!protectedOperations.has(request.path)) {
@@ -36,5 +38,12 @@ export function authRateLimit(request: Request, response: Response, next: NextFu
     return;
   }
 
+  next();
+}
+export function uploadRateLimit(request: Request, response: Response, next: NextFunction): void {
+  const key = clientKey(request); const now = Date.now(); const current = uploadAttempts.get(key);
+  const entry = !current || current.resetAt <= now ? { count: 1, resetAt: now + WINDOW_MS } : { count: current.count + 1, resetAt: current.resetAt };
+  uploadAttempts.set(key, entry);
+  if (entry.count > 30) { response.setHeader("Retry-After", Math.ceil((entry.resetAt - now) / 1000)); response.status(429).json({ error: { code: "UPLOAD_RATE_LIMITED", message: "Too many upload requests" } }); return; }
   next();
 }

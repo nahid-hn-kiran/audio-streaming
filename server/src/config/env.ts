@@ -17,6 +17,7 @@ const environmentSchema = z.object({
   MAX_AUDIO_UPLOAD_BYTES: z.coerce.number().int().positive().default(104857600),
   UPLOAD_URL_TTL_SECONDS: z.coerce.number().int().positive().max(3600).default(900),
   PLAYBACK_URL_TTL_SECONDS: z.coerce.number().int().positive().max(3600).default(300),
+  UPLOAD_CLEANUP_GRACE_SECONDS: z.coerce.number().int().positive().default(86400),
 }).superRefine((values, context) => {
   if (values.NODE_ENV !== "production") return;
 
@@ -28,6 +29,9 @@ const environmentSchema = z.object({
         message: `${field} must use HTTPS in production`,
       });
     }
+  }
+  for (const field of ["OBJECT_STORAGE_ENDPOINT", "OBJECT_STORAGE_ACCESS_KEY_ID", "OBJECT_STORAGE_SECRET_ACCESS_KEY"] as const) {
+    if (!values[field]) context.addIssue({ code: "custom", path: [field], message: `${field} is required in production` });
   }
 });
 

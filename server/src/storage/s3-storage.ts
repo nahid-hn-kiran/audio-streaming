@@ -1,4 +1,4 @@
-import { GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { env } from "../config/env.js";
 import type { ObjectHead, ObjectStorage } from "./object-storage.js";
@@ -7,4 +7,5 @@ export const storage: ObjectStorage = {
   async createUploadUrl(key, contentType, expiresIn) { return getSignedUrl(client, new PutObjectCommand({ Bucket: env.OBJECT_STORAGE_BUCKET, Key: key, ContentType: contentType }), { expiresIn }); },
   async headObject(key): Promise<ObjectHead | null> { try { const r = await client.send(new HeadObjectCommand({ Bucket: env.OBJECT_STORAGE_BUCKET, Key: key })); return { contentLength: r.ContentLength, contentType: r.ContentType, checksum: r.ChecksumSHA256 ?? r.ETag }; } catch { return null; } },
   async createDownloadUrl(key, expiresIn) { return getSignedUrl(client, new GetObjectCommand({ Bucket: env.OBJECT_STORAGE_BUCKET, Key: key }), { expiresIn }); },
+  async deleteObject(key) { await client.send(new DeleteObjectCommand({ Bucket: env.OBJECT_STORAGE_BUCKET, Key: key })); },
 };
