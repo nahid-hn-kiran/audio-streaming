@@ -1,0 +1,14 @@
+"use client";
+/* eslint-disable react-hooks/set-state-in-effect */
+import { useEffect, useRef, useState } from "react";
+import { getPlayback, type Track } from "@/lib/catalog";
+
+export function AudioPlayer({ track }: { track: Track | null }) {
+  const audioRef = useRef<HTMLAudioElement>(null); const [url, setUrl] = useState<string | null>(null); const [error, setError] = useState(""); const [loading, setLoading] = useState(false); const [playing, setPlaying] = useState(false); const [progress, setProgress] = useState(0); const [duration, setDuration] = useState(0); const [volume, setVolume] = useState(1);
+  useEffect(() => { setUrl(null); setPlaying(false); setProgress(0); setDuration(0); setError(""); if (!track) return; setLoading(true); void getPlayback(track.id).then(({ data }) => setUrl(data.url)).catch(() => setError("Playback is unavailable for this track.")).finally(() => setLoading(false)); }, [track]);
+  useEffect(() => { if (url && audioRef.current) { audioRef.current.src = url; void audioRef.current.play().then(() => setPlaying(true)).catch(() => undefined); } }, [url]);
+  if (!track) return null;
+  const format = (seconds: number) => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`;
+  function toggle() { const audio = audioRef.current; if (!audio) return; if (playing) { audio.pause(); setPlaying(false); } else { void audio.play().then(() => setPlaying(true)).catch(() => setError("Playback could not start.")); } }
+  return <section className="fixed inset-x-0 bottom-0 border-t bg-white/95 p-4 shadow-lg backdrop-blur" aria-label="Audio player"><div className="mx-auto grid max-w-6xl gap-3 md:grid-cols-[1fr_auto_180px] md:items-center"><div><p className="font-medium">{track.title}</p><p className="text-xs text-gray-500">{track.album?.title ?? "Now playing"}</p>{error && <p className="text-xs text-red-600" role="alert">{error}</p>}</div><div className="flex items-center gap-3"><button onClick={toggle} disabled={loading || !url} className="rounded-full bg-black px-4 py-2 text-sm text-white disabled:opacity-50">{loading ? "Loading…" : playing ? "Pause" : "Play"}</button><span className="text-xs text-gray-500">{format(progress)} / {format(duration)}</span></div><div className="flex items-center gap-2"><input aria-label="Seek" type="range" min="0" max={duration || 1} value={progress} onChange={(e) => { const value = Number(e.target.value); setProgress(value); if (audioRef.current) audioRef.current.currentTime = value; }} className="w-full" /><input aria-label="Volume" type="range" min="0" max="1" step="0.05" value={volume} onChange={(e) => { const value = Number(e.target.value); setVolume(value); if (audioRef.current) audioRef.current.volume = value; }} className="w-20" /></div></div><audio ref={audioRef} onTimeUpdate={(e) => setProgress(e.currentTarget.currentTime)} onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)} onEnded={() => setPlaying(false)} /></section>;
+}
