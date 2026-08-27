@@ -1,0 +1,10 @@
+import { apiFetch } from "@/lib/api";
+import type { Album, Artist, Track } from "@/lib/catalog";
+export const adminCreateArtist = (body: { name: string; slug: string; bio?: string }) => apiFetch<{ data: Artist }>("/api/v1/admin/artists", { method: "POST", body: JSON.stringify(body) });
+export const adminUpdateArtist = (id: string, body: Partial<{ name: string; slug: string; bio: string }>) => apiFetch<{ data: Artist }>(`/api/v1/admin/artists/${id}`, { method: "PATCH", body: JSON.stringify(body) });
+export const adminCreateAlbum = (body: { artistId: string; title: string; slug: string; description?: string }) => apiFetch<{ data: Album }>("/api/v1/admin/albums", { method: "POST", body: JSON.stringify(body) });
+export const adminUpdateAlbum = (id: string, body: Partial<{ title: string; slug: string; description: string }>) => apiFetch<{ data: Album }>(`/api/v1/admin/albums/${id}`, { method: "PATCH", body: JSON.stringify(body) });
+export const adminCreateTrack = (body: { albumId: string; title: string; slug: string; trackNumber: number; discNumber: number; durationSeconds?: number; artists: Array<{ artistId: string; creditType: "PRIMARY" | "FEATURED"; position: number }> }) => apiFetch<{ data: Track }>("/api/v1/admin/tracks", { method: "POST", body: JSON.stringify(body) });
+export const adminUpdateTrack = (id: string, body: Partial<{ title: string; slug: string; trackNumber: number; discNumber: number; durationSeconds: number }>) => apiFetch<{ data: Track }>(`/api/v1/admin/tracks/${id}`, { method: "PATCH", body: JSON.stringify(body) });
+export const adminPublish = (type: "artists" | "albums" | "tracks", id: string) => apiFetch(`/api/v1/admin/${type}/${id}/publish`, { method: "POST" });
+export const adminArchive = (type: "artists" | "albums" | "tracks", id: string) => apiFetch(`/api/v1/admin/${type}/${id}/archive`, { method: "POST" });

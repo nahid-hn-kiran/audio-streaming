@@ -1,0 +1,9 @@
+"use client";
+/* eslint-disable react-hooks/set-state-in-effect */
+import { useCallback, useEffect, useState } from "react";
+import { listArtists, type Album, type Artist } from "@/lib/catalog";
+import { adminCreateAlbum } from "@/lib/admin-catalog";
+import { AdminList } from "@/components/admin-list";
+import { AdminResourceForm } from "@/components/admin-resource-form";
+import { EmptyState, ErrorState, LoadingState } from "@/components/catalog-states";
+export default function AdminAlbums() { const [items, setItems] = useState<Album[]>([]); const [artists, setArtists] = useState<Artist[]>([]); const [state, setState] = useState("loading"); const load = useCallback(() => { setState("loading"); void listArtists(1, 100).then((r) => { setArtists(r.data); setItems(r.data.flatMap((artist) => (artist.albums ?? []).map((album) => ({ ...album, artist: { id: artist.id, name: artist.name, slug: artist.slug } })))); setState("ready"); }).catch(() => setState("error")); }, []); useEffect(load, [load]); return <main className="mx-auto grid max-w-6xl gap-8 px-4 py-10 lg:grid-cols-[320px_1fr]"><AdminResourceForm title="Create album" fields={[{ name: "artistId", label: `Artist ID (${artists.length} available)`, required: true }, { name: "title", label: "Title", required: true }, { name: "slug", label: "Slug", required: true }, { name: "description", label: "Description" }]} onSubmit={async (values) => { await adminCreateAlbum(values as { artistId: string; title: string; slug: string; description?: string }); load(); }} /><section><h1 className="mb-4 text-2xl font-semibold">Albums</h1>{state === "loading" ? <LoadingState /> : state === "error" ? <ErrorState /> : !items.length ? <EmptyState label="No albums are visible through the current catalog API." /> : <AdminList type="albums" items={items} onRefresh={load} />}</section></main>; }
