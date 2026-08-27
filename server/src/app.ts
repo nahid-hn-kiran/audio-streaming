@@ -8,6 +8,7 @@ import { authRateLimit } from "./middleware/rate-limit.js";
 import { catalogRouter } from "./routes/catalog.js";
 import { adminCatalogRouter } from "./routes/admin-catalog.js";
 import { mediaRouter } from "./routes/media.js";
+import { playlistsRouter } from "./routes/playlists.js";
 
 export const app = express();
 
@@ -30,6 +31,7 @@ app.get("/health", (_request, response) => {
 app.use("/api/v1", catalogRouter);
 app.use("/api/v1/admin", adminCatalogRouter);
 app.use("/api/v1", mediaRouter);
+app.use("/api/v1/playlists", playlistsRouter);
 app.use("/api", authRouter);
 
 app.use((_error: unknown, _request: express.Request, response: express.Response, _next: express.NextFunction) => {
