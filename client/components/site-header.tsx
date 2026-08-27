@@ -1,2 +1,2 @@
-import Link from "next/link";
-export function SiteHeader() { return <header className="border-b"><nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4"><Link href="/" className="font-semibold">Audio Streaming</Link><div className="flex gap-4 text-sm"><Link href="/artists">Artists</Link><Link href="/account">Account</Link></div></nav></header>; }
+"use client"; import Link from "next/link"; import { useAuth } from "@/components/auth-provider";
+export function SiteHeader() { const {user}=useAuth(); return <header className="border-b"><nav className="mx-auto flex max-w-6xl flex-wrap items-center gap-4 px-4 py-4"><Link href="/" className="mr-auto font-semibold">Audio Streaming</Link><Link href="/artists">Artists</Link><Link href="/playlists">Playlists</Link><Link href="/liked">Liked</Link><Link href="/history">History</Link><Link href="/account">Account</Link>{user?.role === "ADMIN" && <Link href="/admin">Admin</Link>}</nav></header>; }

@@ -1,0 +1,11 @@
+import { apiFetch } from "@/lib/api";
+import type { Track } from "@/lib/catalog";
+export type Playlist = { id:string; name:string; description?:string|null; visibility:"PRIVATE"|"PUBLIC"|"UNLISTED"; createdAt:string; updatedAt:string; tracks?:Array<{position:number;addedAt:string;track:Track}> };
+export const listPlaylists=()=>apiFetch<{data:Playlist[];pagination:unknown}>("/api/v1/playlists");
+export const getPlaylist=(id:string)=>apiFetch<{data:Playlist}>(`/api/v1/playlists/${id}`);
+export const createPlaylist=(body:Pick<Playlist,"name"|"visibility">&{description?:string})=>apiFetch<{data:Playlist}>("/api/v1/playlists",{method:"POST",body:JSON.stringify(body)});
+export const updatePlaylist=(id:string,body:Partial<Pick<Playlist,"name"|"visibility">>&{description?:string})=>apiFetch<{data:Playlist}>(`/api/v1/playlists/${id}`,{method:"PATCH",body:JSON.stringify(body)});
+export const deletePlaylist=(id:string)=>apiFetch<void>(`/api/v1/playlists/${id}`,{method:"DELETE"});
+export const addTrack=(id:string,trackId:string)=>apiFetch<{data:Playlist}>(`/api/v1/playlists/${id}/tracks`,{method:"POST",body:JSON.stringify({trackId})});
+export const removeTrack=(id:string,trackId:string)=>apiFetch<void>(`/api/v1/playlists/${id}/tracks/${trackId}`,{method:"DELETE"});
+export const reorderPlaylist=(id:string,trackIds:string[])=>apiFetch<{data:Playlist}>(`/api/v1/playlists/${id}/tracks/reorder`,{method:"PATCH",body:JSON.stringify({trackIds})});
