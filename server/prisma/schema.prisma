@@ -30,6 +30,14 @@ enum MediaStatus {
   FAILED
   DELETED
 }
+enum UploadStatus {
+  INITIATED
+  UPLOADING
+  UPLOADED
+  COMPLETED
+  FAILED
+  EXPIRED
+}
 
 enum PlaylistVisibility {
   PRIVATE
@@ -58,6 +66,7 @@ model User {
   playlists     Playlist[]
   trackLikes    TrackLike[]
   history       ListeningHistory[]
+  uploads       Upload[]
 
   @@index([role])
   @@map("user")
@@ -169,11 +178,37 @@ model Track {
   playlistTracks  PlaylistTrack[]
   likes           TrackLike[]
   history         ListeningHistory[]
+  uploads         Upload[]
 
   @@unique([albumId, discNumber, trackNumber])
   @@index([albumId, discNumber, trackNumber])
   @@index([status, title])
   @@index([createdAt])
+}
+
+model Upload {
+  id                String       @id @default(uuid()) @db.Uuid
+  trackId           String       @db.Uuid
+  initiatedByUserId String
+  mediaAssetId      String?      @db.Uuid
+  provider          String
+  bucket            String
+  objectKey         String
+  originalFilename  String
+  expectedMimeType  String
+  expectedByteSize  BigInt
+  checksum          String?
+  status            UploadStatus @default(INITIATED)
+  failureCode       String?
+  expiresAt         DateTime     @db.Timestamptz(3)
+  completedAt       DateTime?    @db.Timestamptz(3)
+  createdAt         DateTime     @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime     @updatedAt @db.Timestamptz(3)
+  track             Track        @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  initiatedBy       User         @relation(fields: [initiatedByUserId], references: [id], onDelete: Cascade)
+  mediaAsset        MediaAsset?  @relation(fields: [mediaAssetId], references: [id], onDelete: SetNull)
+  @@index([trackId, status])
+  @@index([status, expiresAt])
 }
 
 model TrackArtist {
@@ -205,6 +240,7 @@ model MediaAsset {
   audioTrack      Track?      @relation("TrackAudio")
   albumCover      Album?      @relation("AlbumCover")
   artistImage     Artist?     @relation("ArtistImage")
+  uploads         Upload[]
 
   @@unique([bucket, objectKey])
   @@index([kind, status])

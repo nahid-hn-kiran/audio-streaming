@@ -38,6 +38,7 @@ async function change(request: Request, response: Response, next: NextFunction, 
   } catch (error) {
     if (error instanceof Error && error.message === "PARENT_NOT_PUBLISHED") return dependency(response, "The parent resource must be published first");
     if (error instanceof Error && error.message === "PRIMARY_ARTIST_REQUIRED") return dependency(response, "A published primary artist is required before publishing a track");
+    if (error instanceof Error && error.message === "MEDIA_REQUIRED") return dependency(response, "A ready audio asset is required before publishing a track");
     handle(error, response, next);
   }
 }

@@ -47,6 +47,8 @@ export async function changePublication(resource: Resource, id: string, status: 
       const track = await prisma.track.findUnique({ where: { id }, select: { album: { select: { status: true } }, artists: { where: { creditType: "PRIMARY" }, select: { artist: { select: { status: true } } } } } });
       if (!track) return null;
       if (track.album.status !== PublicationStatus.PUBLISHED) throw new Error("PARENT_NOT_PUBLISHED");
+      const media = await prisma.mediaAsset.findUnique({ where: { id: (await prisma.track.findUniqueOrThrow({ where: { id }, select: { mediaAssetId: true } })).mediaAssetId ?? "" }, select: { kind: true, status: true } }).catch(() => null);
+      if (!media || media.kind !== "AUDIO" || media.status !== "READY") throw new Error("MEDIA_REQUIRED");
       if (track.artists.length !== 1 || track.artists[0].artist.status !== PublicationStatus.PUBLISHED) throw new Error("PRIMARY_ARTIST_REQUIRED");
     }
   }
