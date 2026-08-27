@@ -49,6 +49,13 @@ enum TrackCreditType {
   PRIMARY
   FEATURED
 }
+enum ListeningHistorySource {
+  TRACK_PAGE
+  ALBUM
+  PLAYLIST
+  SEARCH
+  QUEUE
+}
 
 // Better Auth core schema. Keep these field names and table mappings aligned
 // with Better Auth's Prisma adapter configuration.
@@ -295,6 +302,7 @@ model ListeningHistory {
   playedAt        DateTime @default(now()) @db.Timestamptz(3)
   progressSeconds Int?
   completed       Boolean  @default(false)
+  source          ListeningHistorySource?
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   track           Track    @relation(fields: [trackId], references: [id], onDelete: Restrict)
 

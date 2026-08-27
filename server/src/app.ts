@@ -9,6 +9,7 @@ import { catalogRouter } from "./routes/catalog.js";
 import { adminCatalogRouter } from "./routes/admin-catalog.js";
 import { mediaRouter } from "./routes/media.js";
 import { playlistsRouter } from "./routes/playlists.js";
+import { likesHistoryRouter } from "./routes/likes-history.js";
 
 export const app = express();
 
@@ -32,6 +33,7 @@ app.use("/api/v1", catalogRouter);
 app.use("/api/v1/admin", adminCatalogRouter);
 app.use("/api/v1", mediaRouter);
 app.use("/api/v1/playlists", playlistsRouter);
+app.use("/api/v1", likesHistoryRouter);
 app.use("/api", authRouter);
 
 app.use((_error: unknown, _request: express.Request, response: express.Response, _next: express.NextFunction) => {

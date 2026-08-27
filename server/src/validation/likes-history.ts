@@ -1,0 +1,2 @@
+import { z } from "zod";
+export const trackId=z.object({id:z.uuid()});export const historyId=z.object({id:z.uuid()});export const page=z.object({page:z.coerce.number().int().min(1).default(1),limit:z.coerce.number().int().min(1).max(100).default(20)});export const historyBody=z.object({progressSeconds:z.number().int().min(0).optional(),completed:z.boolean(),source:z.enum(["TRACK_PAGE","ALBUM","PLAYLIST","SEARCH","QUEUE"]).optional()}).strict();
