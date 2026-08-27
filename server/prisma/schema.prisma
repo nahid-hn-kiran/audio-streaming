@@ -1,0 +1,268 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum PublicationStatus {
+  DRAFT
+  PROCESSING
+  PUBLISHED
+  ARCHIVED
+}
+
+enum MediaKind {
+  AUDIO
+  IMAGE
+}
+
+enum MediaStatus {
+  PENDING
+  READY
+  FAILED
+  DELETED
+}
+
+enum PlaylistVisibility {
+  PRIVATE
+  PUBLIC
+  UNLISTED
+}
+
+enum TrackCreditType {
+  PRIMARY
+  FEATURED
+}
+
+// Better Auth core schema. Keep these field names and table mappings aligned
+// with Better Auth's Prisma adapter configuration.
+model User {
+  id            String             @id
+  name          String
+  email         String             @unique
+  emailVerified Boolean            @default(false)
+  image         String?
+  role          Role               @default(USER)
+  createdAt     DateTime           @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime           @updatedAt @db.Timestamptz(3)
+  sessions      Session[]
+  accounts      Account[]
+  playlists     Playlist[]
+  trackLikes    TrackLike[]
+  history       ListeningHistory[]
+
+  @@index([role])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime @db.Timestamptz(3)
+  token     String   @unique
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  issuer                String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime? @db.Timestamptz(3)
+  refreshTokenExpiresAt DateTime? @db.Timestamptz(3)
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt             DateTime  @updatedAt @db.Timestamptz(3)
+
+  @@unique([issuer, accountId])
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime @db.Timestamptz(3)
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(3)
+
+  @@index([identifier])
+  @@index([expiresAt])
+  @@map("verification")
+}
+
+model Artist {
+  id           String            @id @default(uuid()) @db.Uuid
+  name         String
+  slug         String            @unique
+  bio          String?
+  imageAssetId String?           @unique @db.Uuid
+  status       PublicationStatus @default(DRAFT)
+  createdAt    DateTime          @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime          @updatedAt @db.Timestamptz(3)
+  albums       Album[]
+  trackCredits TrackArtist[]
+  imageAsset   MediaAsset?       @relation("ArtistImage", fields: [imageAssetId], references: [id], onDelete: SetNull)
+
+  @@index([status, name])
+  @@index([createdAt])
+}
+
+model Album {
+  id           String            @id @default(uuid()) @db.Uuid
+  artistId     String            @db.Uuid
+  title        String
+  slug         String            @unique
+  description  String?
+  coverAssetId String?           @unique @db.Uuid
+  releaseDate  DateTime?         @db.Timestamptz(3)
+  status       PublicationStatus @default(DRAFT)
+  createdAt    DateTime          @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime          @updatedAt @db.Timestamptz(3)
+  artist       Artist            @relation(fields: [artistId], references: [id], onDelete: Restrict)
+  tracks       Track[]
+  coverAsset   MediaAsset?       @relation("AlbumCover", fields: [coverAssetId], references: [id], onDelete: SetNull)
+
+  @@index([artistId, status])
+  @@index([status, releaseDate])
+  @@index([status, title])
+}
+
+model Track {
+  id              String             @id @default(uuid()) @db.Uuid
+  albumId         String             @db.Uuid
+  title           String
+  slug            String             @unique
+  trackNumber     Int
+  discNumber      Int                @default(1)
+  durationSeconds Int?
+  status          PublicationStatus  @default(DRAFT)
+  mediaAssetId    String?            @unique @db.Uuid
+  createdAt       DateTime           @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime           @updatedAt @db.Timestamptz(3)
+  album           Album              @relation(fields: [albumId], references: [id], onDelete: Restrict)
+  mediaAsset      MediaAsset?        @relation("TrackAudio", fields: [mediaAssetId], references: [id], onDelete: SetNull)
+  artists         TrackArtist[]
+  playlistTracks  PlaylistTrack[]
+  likes           TrackLike[]
+  history         ListeningHistory[]
+
+  @@unique([albumId, discNumber, trackNumber])
+  @@index([albumId, discNumber, trackNumber])
+  @@index([status, title])
+  @@index([createdAt])
+}
+
+model TrackArtist {
+  trackId    String          @db.Uuid
+  artistId   String          @db.Uuid
+  creditType TrackCreditType @default(PRIMARY)
+  position   Int             @default(0)
+  track      Track           @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  artist     Artist          @relation(fields: [artistId], references: [id], onDelete: Restrict)
+
+  @@id([trackId, artistId])
+  @@unique([trackId, position])
+  @@index([artistId, creditType])
+}
+
+model MediaAsset {
+  id              String      @id @default(uuid()) @db.Uuid
+  kind            MediaKind
+  storageProvider String
+  bucket          String
+  objectKey       String
+  mimeType        String
+  byteSize        BigInt
+  checksum        String?
+  durationSeconds Int?
+  status          MediaStatus @default(PENDING)
+  createdAt       DateTime    @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime    @updatedAt @db.Timestamptz(3)
+  audioTrack      Track?      @relation("TrackAudio")
+  albumCover      Album?      @relation("AlbumCover")
+  artistImage     Artist?     @relation("ArtistImage")
+
+  @@unique([bucket, objectKey])
+  @@index([kind, status])
+  @@index([createdAt])
+}
+
+model Playlist {
+  id          String             @id @default(uuid()) @db.Uuid
+  ownerId     String
+  name        String
+  description String?
+  visibility  PlaylistVisibility @default(PRIVATE)
+  createdAt   DateTime           @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime           @updatedAt @db.Timestamptz(3)
+  owner       User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  tracks      PlaylistTrack[]
+
+  @@unique([ownerId, name])
+  @@index([ownerId, updatedAt])
+  @@index([visibility, updatedAt])
+}
+
+model PlaylistTrack {
+  playlistId String   @db.Uuid
+  trackId    String   @db.Uuid
+  position   Int
+  addedAt    DateTime @default(now()) @db.Timestamptz(3)
+  playlist   Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  track      Track    @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  @@id([playlistId, trackId])
+  @@unique([playlistId, position])
+  @@index([trackId])
+}
+
+model TrackLike {
+  userId    String
+  trackId   String   @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  track     Track    @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  @@id([userId, trackId])
+  @@index([userId, createdAt])
+  @@index([trackId, createdAt])
+}
+
+model ListeningHistory {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String
+  trackId         String   @db.Uuid
+  playedAt        DateTime @default(now()) @db.Timestamptz(3)
+  progressSeconds Int?
+  completed       Boolean  @default(false)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  track           Track    @relation(fields: [trackId], references: [id], onDelete: Restrict)
+
+  @@index([userId, playedAt])
+  @@index([userId, trackId, playedAt])
+  @@index([trackId, playedAt])
+}

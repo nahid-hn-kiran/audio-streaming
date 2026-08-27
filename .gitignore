@@ -1,0 +1,20 @@
+# Dependencies and build output
+node_modules/
+client/node_modules/
+server/node_modules/
+client/.next/
+server/dist/
+server/generated/
+server/src/generated/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+client/.env.local
+server/.env
+
+# Tooling
+*.tsbuildinfo
+coverage/
+.DS_Store
