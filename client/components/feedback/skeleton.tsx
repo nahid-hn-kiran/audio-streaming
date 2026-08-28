@@ -1,0 +1,3 @@
+export function PageSkeleton(){return <div className="animate-pulse space-y-6"><div className="h-10 w-1/3 rounded bg-[var(--surface-raised)]"/><div className="h-32 rounded-[var(--radius-lg)] bg-[var(--surface)]"/></div>}
+export function SectionSkeleton(){return <div className="grid animate-pulse gap-3 sm:grid-cols-3"><div className="h-32 rounded-[var(--radius-md)] bg-[var(--surface)]"/><div className="h-32 rounded-[var(--radius-md)] bg-[var(--surface)]"/><div className="h-32 rounded-[var(--radius-md)] bg-[var(--surface)]"/></div>}
+export function ListSkeleton(){return <div className="animate-pulse space-y-2">{[1,2,3,4].map((n)=><div key={n} className="h-14 rounded bg-[var(--surface)]"/>)}</div>}

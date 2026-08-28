@@ -1,3 +1,2 @@
-import Link from "next/link";
-import { AuthForm } from "@/components/auth-form";
-export default function LoginPage() { return <main className="grid min-h-screen place-items-center p-8"><div className="grid gap-3"><AuthForm mode="login" /><Link className="text-center text-sm underline" href="/register">Need an account? Register</Link></div></main>; }
+import Link from "next/link"; import { AuthForm } from "@/components/auth-form"; import { AuthLayout } from "@/components/auth/auth-layout";
+export default function LoginPage(){return <AuthLayout eyebrow="Sign in"><AuthForm mode="login"/><div className="mt-8 flex justify-between text-sm text-[var(--muted)]"><span>New here? <Link className="text-[var(--accent)]" href="/register">Create an account</Link></span><Link href="/">Back to home</Link></div></AuthLayout>}

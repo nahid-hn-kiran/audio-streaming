@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/components/auth-provider";
+import { PlaybackProvider } from "@/components/player/playback-provider";
+import { AudioPlayer } from "@/components/audio-player";
 
 export const metadata: Metadata = {
   title: "Audio Streaming",
@@ -10,7 +12,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body><AuthProvider>{children}</AuthProvider></body>
+      <body><AuthProvider><PlaybackProvider>{children}<AudioPlayer /></PlaybackProvider></AuthProvider></body>
     </html>
   );
 }

@@ -1,3 +1,2 @@
-import Link from "next/link";
-import type { Album } from "@/lib/catalog";
-export function AlbumCard({ album }: { album: Album }) { return <Link href={`/albums/${encodeURIComponent(album.slug)}`} className="block rounded-xl border p-5 transition hover:border-black"><h3 className="font-semibold">{album.title}</h3>{album.releaseDate && <p className="mt-1 text-sm text-gray-500">{new Date(album.releaseDate).getFullYear()}</p>}{album.description && <p className="mt-2 line-clamp-2 text-sm text-gray-600">{album.description}</p>}</Link>; }
+import Link from "next/link"; import type {Album} from "@/lib/catalog"; import {Artwork} from "@/components/catalog/artwork";
+export function AlbumCard({album}:{album:Album}){return <Link href={`/albums/${encodeURIComponent(album.slug)}`} className="group block"><Artwork label={album.title} size="md"/><h3 className="mt-3 font-semibold group-hover:text-[var(--accent)]">{album.title}</h3>{album.artist&&<p className="mt-1 text-sm text-[var(--muted)]">{album.artist.name}</p>}</Link>}

@@ -29,11 +29,12 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
     throw new ApiError("The service is unavailable. Please try again.", 0, "NETWORK_ERROR");
   }
 
-  const payload: unknown = await response.json().catch(() => null);
+  const payload: unknown = response.status === 204 ? null : await response.json().catch(() => null);
   if (!response.ok) {
     const body = typeof payload === "object" && payload !== null ? payload as Record<string, unknown> : {};
     const nested = typeof body.error === "object" && body.error !== null ? body.error as Record<string, unknown> : {};
-    const message = typeof body.message === "string" ? body.message : typeof nested.message === "string" ? nested.message : "Request failed. Please try again.";
+    const fallback = response.status === 400 ? "Please check the submitted information." : response.status === 401 ? "Please sign in to continue." : response.status === 403 ? "You do not have permission to do that." : response.status === 404 ? "The requested resource is unavailable." : response.status === 409 ? "That action conflicts with the current state." : response.status === 429 ? "Too many requests. Please try again shortly." : response.status >= 500 ? "The service is temporarily unavailable." : "Request failed. Please try again.";
+    const message = typeof body.message === "string" ? body.message : typeof nested.message === "string" ? nested.message : fallback;
     const code = typeof body.code === "string" ? body.code : typeof nested.code === "string" ? nested.code : undefined;
     throw new ApiError(message, response.status, code);
   }

@@ -1,0 +1,2 @@
+import Link from "next/link";
+export function UnauthorizedState(){return <div className="rounded-[var(--radius-md)] border bg-[var(--surface)] p-8 text-center"><h2 className="text-lg font-semibold">Sign in required</h2><p className="mt-2 text-sm text-[var(--muted)]">Sign in to access your library.</p><Link href="/login" className="mt-5 inline-block rounded bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-black">Sign in</Link></div>}

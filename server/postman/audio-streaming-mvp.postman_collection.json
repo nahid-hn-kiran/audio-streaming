@@ -1,0 +1,95 @@
+{
+  "info": {
+    "name": "Audio Streaming MVP",
+    "description": "Manual QA collection for the implemented backend MVP. Start the server, set baseUrl, authenticate first, and retain Better Auth cookies. Admin requests require an ADMIN account. Direct media upload requires a real local audio file; never store storage credentials here.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {"key":"baseUrl","value":"http://localhost:4000"},
+    {"key":"clientOrigin","value":"http://localhost:3000"},
+    {"key":"userEmail","value":""},{"key":"userPassword","value":""},
+    {"key":"adminEmail","value":""},{"key":"adminPassword","value":""},
+    {"key":"userId","value":""},{"key":"adminUserId","value":""},
+    {"key":"artistId","value":""},{"key":"artistSlug","value":""},
+    {"key":"albumId","value":""},{"key":"albumSlug","value":""},
+    {"key":"trackId","value":""},{"key":"playlistId","value":""},
+    {"key":"uploadId","value":""},{"key":"uploadUrl","value":""},
+    {"key":"historyId","value":""}
+  ],
+  "item": [
+    {"name":"01 Authentication","description":"Better Auth endpoints use retained cookies. Use environment variables for credentials and do not print secrets.","item":[
+      {"name":"Register","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"name\":\"QA User\",\"email\":\"{{userEmail}}\",\"password\":\"{{userPassword}}\"}"},"url":"{{baseUrl}}/api/auth/sign-up/email"}},
+      {"name":"Login","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"email\":\"{{userEmail}}\",\"password\":\"{{userPassword}}\"}"},"url":"{{baseUrl}}/api/auth/sign-in/email"}},
+      {"name":"Session","request":{"method":"GET","url":"{{baseUrl}}/api/auth/get-session"}},
+      {"name":"Current user","request":{"method":"GET","url":"{{baseUrl}}/api/me"}},
+      {"name":"Logout","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{}"},"url":"{{baseUrl}}/api/auth/sign-out"}},
+      {"name":"Unauthenticated current user","request":{"method":"GET","url":"{{baseUrl}}/api/me"}}
+    ]},
+    {"name":"02 Public Catalog","description":"Only published resources are returned; invalid and missing resources are safe errors.","item":[
+      {"name":"List artists","request":{"method":"GET","url":"{{baseUrl}}/api/v1/artists?page=1&limit=20"}},
+      {"name":"Artist detail","request":{"method":"GET","url":"{{baseUrl}}/api/v1/artists/{{artistSlug}}"}},
+      {"name":"Invalid artist slug","request":{"method":"GET","url":"{{baseUrl}}/api/v1/artists/Bad%20Slug"}},
+      {"name":"Album detail","request":{"method":"GET","url":"{{baseUrl}}/api/v1/albums/{{albumSlug}}"}},
+      {"name":"Track detail","request":{"method":"GET","url":"{{baseUrl}}/api/v1/tracks/{{trackId}}"}},
+      {"name":"Invalid track UUID","request":{"method":"GET","url":"{{baseUrl}}/api/v1/tracks/not-a-uuid"}}
+    ]},
+    {"name":"03 Admin Catalog","description":"No admin listing endpoint exists. Run create before update/publish/archive. Capture IDs from responses.","item":[
+      {"name":"Create artist","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"name\":\"QA Artist\",\"slug\":\"qa-artist\",\"bio\":\"QA\"}"},"url":"{{baseUrl}}/api/v1/admin/artists"}},
+      {"name":"Update artist","request":{"method":"PATCH","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"name\":\"QA Artist Updated\"}"},"url":"{{baseUrl}}/api/v1/admin/artists/{{artistId}}"}},
+      {"name":"Publish artist","request":{"method":"POST","url":"{{baseUrl}}/api/v1/admin/artists/{{artistId}}/publish"}},
+      {"name":"Archive artist","request":{"method":"POST","url":"{{baseUrl}}/api/v1/admin/artists/{{artistId}}/archive"}},
+      {"name":"Create album","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"artistId\":\"{{artistId}}\",\"title\":\"QA Album\",\"slug\":\"qa-album\",\"description\":\"QA\"}"},"url":"{{baseUrl}}/api/v1/admin/albums"}},
+      {"name":"Update album","request":{"method":"PATCH","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"title\":\"QA Album Updated\"}"},"url":"{{baseUrl}}/api/v1/admin/albums/{{albumId}}"}},
+      {"name":"Publish album","request":{"method":"POST","url":"{{baseUrl}}/api/v1/admin/albums/{{albumId}}/publish"}},
+      {"name":"Archive album","request":{"method":"POST","url":"{{baseUrl}}/api/v1/admin/albums/{{albumId}}/archive"}},
+      {"name":"Create track","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"albumId\":\"{{albumId}}\",\"title\":\"QA Track\",\"slug\":\"qa-track\",\"trackNumber\":1,\"discNumber\":1,\"durationSeconds\":180,\"artists\":[{\"artistId\":\"{{artistId}}\",\"creditType\":\"PRIMARY\",\"position\":0}]}"},"url":"{{baseUrl}}/api/v1/admin/tracks"}},
+      {"name":"Update track","request":{"method":"PATCH","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"title\":\"QA Track Updated\"}"},"url":"{{baseUrl}}/api/v1/admin/tracks/{{trackId}}"}},
+      {"name":"Publish track","request":{"method":"POST","url":"{{baseUrl}}/api/v1/admin/tracks/{{trackId}}/publish"}},
+      {"name":"Archive track","request":{"method":"POST","url":"{{baseUrl}}/api/v1/admin/tracks/{{trackId}}/archive"}}
+    ]},
+    {"name":"04 Media & Uploads","description":"Initiation/completion/retry require ADMIN. Direct PUT uses the returned presigned URL and a locally attached audio file; no credentials belong in Postman.","item":[
+      {"name":"Initiate audio upload","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"filename\":\"sample.mp3\",\"contentType\":\"audio/mpeg\",\"byteSize\":1048576}"},"url":"{{baseUrl}}/api/v1/admin/tracks/{{trackId}}/audio/upload"}},
+      {"name":"Direct storage PUT (manual URL)","request":{"method":"PUT","description":"Copy uploadUrl into this request URL and attach a local binary audio file. Do not add storage credentials.","body":{"mode":"file"},"url":"{{uploadUrl}}"}},
+      {"name":"Complete upload","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{}"},"url":"{{baseUrl}}/api/v1/admin/uploads/{{uploadId}}/complete"}},
+      {"name":"Retry upload","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"filename\":\"sample.mp3\",\"contentType\":\"audio/mpeg\",\"byteSize\":1048576}"},"url":"{{baseUrl}}/api/v1/admin/uploads/{{uploadId}}/retry"}},
+      {"name":"Invalid MIME upload","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"filename\":\"x.exe\",\"contentType\":\"application/octet-stream\",\"byteSize\":10}"},"url":"{{baseUrl}}/api/v1/admin/tracks/{{trackId}}/audio/upload"}},
+      {"name":"Oversized upload","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"filename\":\"large.mp3\",\"contentType\":\"audio/mpeg\",\"byteSize\":104857601}"},"url":"{{baseUrl}}/api/v1/admin/tracks/{{trackId}}/audio/upload"}},
+      {"name":"Missing completion","request":{"method":"POST","url":"{{baseUrl}}/api/v1/admin/uploads/00000000-0000-0000-0000-000000000000/complete"}}
+    ]},
+    {"name":"05 Playback","item":[
+      {"name":"Playback URL","request":{"method":"GET","url":"{{baseUrl}}/api/v1/tracks/{{trackId}}/playback"}},
+      {"name":"Missing track playback","request":{"method":"GET","url":"{{baseUrl}}/api/v1/tracks/00000000-0000-0000-0000-000000000000/playback"}}
+    ]},
+    {"name":"06 Playlists","description":"Mounted at /api/v1/playlists. Ownership comes from the session; do not send ownerId or position.","item":[
+      {"name":"Create playlist","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"name\":\"QA Favorites\",\"description\":\"QA\",\"visibility\":\"PRIVATE\"}"},"url":"{{baseUrl}}/api/v1/playlists"}},
+      {"name":"List my playlists","request":{"method":"GET","url":"{{baseUrl}}/api/v1/playlists?page=1&limit=20"}},
+      {"name":"Get playlist","request":{"method":"GET","url":"{{baseUrl}}/api/v1/playlists/{{playlistId}}"}},
+      {"name":"Update playlist","request":{"method":"PATCH","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"visibility\":\"PUBLIC\"}"},"url":"{{baseUrl}}/api/v1/playlists/{{playlistId}}"}},
+      {"name":"Add track","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"trackId\":\"{{trackId}}\"}"},"url":"{{baseUrl}}/api/v1/playlists/{{playlistId}}/tracks"}},
+      {"name":"Reorder tracks","request":{"method":"PATCH","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"trackIds\":[\"{{trackId}}\"]}"},"url":"{{baseUrl}}/api/v1/playlists/{{playlistId}}/tracks/reorder"}},
+      {"name":"Remove track","request":{"method":"DELETE","url":"{{baseUrl}}/api/v1/playlists/{{playlistId}}/tracks/{{trackId}}"}},
+      {"name":"Delete playlist","request":{"method":"DELETE","url":"{{baseUrl}}/api/v1/playlists/{{playlistId}}"}}
+    ]},
+    {"name":"07 Likes","item":[
+      {"name":"Like track","request":{"method":"POST","url":"{{baseUrl}}/api/v1/tracks/{{trackId}}/like"}},
+      {"name":"Duplicate like","request":{"method":"POST","url":"{{baseUrl}}/api/v1/tracks/{{trackId}}/like"}},
+      {"name":"Like status","request":{"method":"GET","url":"{{baseUrl}}/api/v1/tracks/{{trackId}}/like"}},
+      {"name":"Liked tracks","request":{"method":"GET","url":"{{baseUrl}}/api/v1/me/liked-tracks?page=1&limit=20"}},
+      {"name":"Unlike track","request":{"method":"DELETE","url":"{{baseUrl}}/api/v1/tracks/{{trackId}}/like"}}
+    ]},
+    {"name":"08 Listening History","description":"source values: TRACK_PAGE, ALBUM, PLAYLIST, SEARCH, QUEUE. userId and playedAt are server-controlled.","item":[
+      {"name":"Create history","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"completed\":false,\"progressSeconds\":0,\"source\":\"TRACK_PAGE\"}"},"url":"{{baseUrl}}/api/v1/tracks/{{trackId}}/history"}},
+      {"name":"History listing","request":{"method":"GET","url":"{{baseUrl}}/api/v1/me/history?page=1&limit=20"}},
+      {"name":"Delete history","request":{"method":"DELETE","url":"{{baseUrl}}/api/v1/me/history/{{historyId}}"}},
+      {"name":"Invalid source","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"completed\":false,\"source\":\"INVALID\"}"},"url":"{{baseUrl}}/api/v1/tracks/{{trackId}}/history"}}
+    ]},
+    {"name":"09 Security & Error Cases","description":"Run these with and without retained cookies. Expected errors include 400, 401, 403, 404, 409, and 429 depending on state.","item":[
+      {"name":"Unauthenticated admin create","request":{"method":"POST","url":"{{baseUrl}}/api/v1/admin/artists"}},
+      {"name":"Invalid admin UUID","request":{"method":"PATCH","url":"{{baseUrl}}/api/v1/admin/artists/not-a-uuid"}},
+      {"name":"Unknown playlist field","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\"name\":\"Blocked\",\"ownerId\":\"attacker\",\"position\":1}"},"url":"{{baseUrl}}/api/v1/playlists"}},
+      {"name":"Invalid like UUID","request":{"method":"POST","url":"{{baseUrl}}/api/v1/tracks/not-a-uuid/like"}},
+      {"name":"Invalid history UUID","request":{"method":"POST","url":"{{baseUrl}}/api/v1/tracks/not-a-uuid/history"}},
+      {"name":"Unauthenticated playlist list","request":{"method":"GET","url":"{{baseUrl}}/api/v1/playlists"}}
+    ]}
+  ]
+}

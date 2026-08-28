@@ -1,0 +1,3 @@
+"use client";
+import { useEffect } from "react"; import { useRouter } from "next/navigation"; import { useAuth } from "@/components/auth-provider";
+export function AuthGuard({children,admin=false}:{children:React.ReactNode;admin?:boolean}){const{user,status}=useAuth();const router=useRouter();useEffect(()=>{if(status==="unauthenticated")router.replace("/login");else if(admin&&status==="authenticated"&&user?.role!=="ADMIN")router.replace("/account")},[status,user,admin,router]);if(status!=="authenticated"||!user||(admin&&user.role!=="ADMIN"))return <main className="grid min-h-screen place-items-center p-8 text-[var(--muted)]">Checking your account…</main>;return <>{children}</>}

@@ -1,0 +1,1 @@
+export function LibraryHeader({eyebrow,title,description}:{eyebrow:string;title:string;description:string}){return <header><p className="text-sm uppercase tracking-[.25em] text-[var(--accent)]">{eyebrow}</p><h1 className="mt-3 text-5xl font-semibold tracking-tight">{title}</h1><p className="mt-4 max-w-xl text-[var(--muted)]">{description}</p></header>}
