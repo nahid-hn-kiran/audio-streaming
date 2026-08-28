@@ -68,6 +68,16 @@ export async function complete(
     return { kind: "failed" as const };
   }
   const head = await store.headObject(upload.objectKey);
+  console.info("Upload completion verification", {
+    uploadId: upload.id,
+    trackId: upload.trackId,
+    objectKey: upload.objectKey,
+    expectedByteSize: Number(upload.expectedByteSize),
+    actualByteSize: head?.contentLength,
+    expectedMimeType: upload.expectedMimeType,
+    actualMimeType: head?.contentType,
+    objectFound: Boolean(head),
+  });
   if (
     !head ||
     head.contentLength !== Number(upload.expectedByteSize) ||

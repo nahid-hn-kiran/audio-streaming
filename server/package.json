@@ -14,6 +14,7 @@
     "test": "node --import ./test/setup.mjs --import tsx --test test/**/*.test.ts",
     "cleanup:uploads": "node --import tsx -e \"import('./src/services/cleanup-uploads.ts').then(async ({cleanupUploads})=>{console.log(await cleanupUploads());})\"",
     "seed:users": "node --import tsx prisma/seed-users.ts",
+    "seed:demo": "node --import tsx prisma/seed-demo.ts",
     "typecheck": "tsc --noEmit",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev"
