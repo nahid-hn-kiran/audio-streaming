@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc -p tsconfig.json",
+    "build": "tsup src/server.ts --format esm --platform node --out-dir dist",
     "start": "node dist/server.js",
     "lint": "eslint src prisma.config.ts",
     "test": "node --import ./test/setup.mjs --import tsx --test test/**/*.test.ts",
