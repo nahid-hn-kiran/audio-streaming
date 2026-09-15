@@ -3,7 +3,6 @@ node_modules/
 client/node_modules/
 server/node_modules/
 client/.next/
-server/dist/
 server/generated/
 server/src/generated/
 server/demo-audio/

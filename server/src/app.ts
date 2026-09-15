@@ -1,5 +1,5 @@
 import cors from "cors";
-import express from "express";
+import express, { Request, Response } from "express";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./auth.js";
 import { env } from "./config/env.js";
@@ -39,8 +39,26 @@ app.use("/api/v1/playlists", playlistsRouter);
 app.use("/api/v1", likesHistoryRouter);
 app.use("/api", authRouter);
 
-app.use((_error: unknown, _request: express.Request, response: express.Response, _next: express.NextFunction) => {
-  void _next;
-  console.error("Unhandled request failure", { error: _error instanceof Error ? _error.name : "UnknownError", method: _request.method, path: _request.path, timestamp: new Date().toISOString() });
-  response.status(500).json({ error: { code: "INTERNAL_ERROR", message: "Internal server error" } });
+app.get("/", (req: Request, res: Response) => {
+  res.send("Hello, TypeScript + Express!");
 });
+
+app.use(
+  (
+    _error: unknown,
+    _request: express.Request,
+    response: express.Response,
+    _next: express.NextFunction,
+  ) => {
+    void _next;
+    console.error("Unhandled request failure", {
+      error: _error instanceof Error ? _error.name : "UnknownError",
+      method: _request.method,
+      path: _request.path,
+      timestamp: new Date().toISOString(),
+    });
+    response.status(500).json({
+      error: { code: "INTERNAL_ERROR", message: "Internal server error" },
+    });
+  },
+);

@@ -1,3 +1,96 @@
 "use client";
-import Link from "next/link"; import {useEffect,useState} from "react"; import {listArtists,type Artist, type Album} from "@/lib/catalog"; import {ArtistCard} from "@/components/artist-card"; import {AlbumCard} from "@/components/album-card"; import {SiteHeader} from "@/components/site-header"; import {Footer} from "@/components/catalog/footer"; import {LoadingState,ErrorState,EmptyState} from "@/components/catalog-states";
-export default function HomePage(){const[artists,setArtists]=useState<Artist[]>([]);const[state,setState]=useState("loading");useEffect(()=>{void listArtists(1,8).then(r=>{setArtists(r.data);setState("ready")}).catch(()=>setState("error"))},[]);const albums:Album[]=artists.flatMap(a=>(a.albums??[]).map(x=>({...x,artist:{id:a.id,name:a.name,slug:a.slug}}))).slice(0,6);return <><SiteHeader/><main className="mx-auto max-w-7xl px-5"><section className="grid min-h-[520px] items-center gap-10 py-20 lg:grid-cols-[1.1fr_.9fr]"><div><p className="text-sm uppercase tracking-[.25em] text-[var(--accent)]">A quieter way to listen</p><h1 className="mt-5 max-w-3xl text-6xl font-semibold tracking-[-.04em] sm:text-7xl">Find the sound that stays with you.</h1><p className="mt-6 max-w-xl text-lg text-[var(--muted)]">Explore published artists and albums, then press play when something feels right.</p><Link href="/artists" className="mt-9 inline-block rounded-[var(--radius-sm)] bg-[var(--accent)] px-5 py-3 font-semibold text-black">Browse artists</Link></div><div className="hidden aspect-square rounded-[var(--radius-lg)] bg-[radial-gradient(circle_at_30%_20%,#b9f36a33,transparent_45%),linear-gradient(145deg,var(--surface-raised),var(--surface))] lg:block"/></section><section className="py-12"><div className="mb-6 flex items-end justify-between"><h2 className="text-2xl font-semibold">Artists to explore</h2><Link href="/artists" className="text-sm text-[var(--muted)] hover:text-white">View all</Link></div>{state==="loading"?<LoadingState/>:state==="error"?<ErrorState/>:artists.length?<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{artists.slice(0,8).map(a=><ArtistCard key={a.id} artist={a}/>)}</div>:<EmptyState label="No published artists are available yet."/>}</section>{albums.length>0&&<section className="py-12"><h2 className="mb-6 text-2xl font-semibold">Latest releases</h2><div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">{albums.map(a=><AlbumCard key={a.id} album={a}/>)}</div></section>}</main><Footer/></>}
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { listArtists, type Artist, type Album } from "@/lib/catalog";
+import { ArtistCard } from "@/components/artist-card";
+import { AlbumCard } from "@/components/album-card";
+import { SiteHeader } from "@/components/site-header";
+import { Footer } from "@/components/catalog/footer";
+import {
+  LoadingState,
+  ErrorState,
+  EmptyState,
+} from "@/components/catalog-states";
+export default function HomePage() {
+  const [artists, setArtists] = useState<Artist[]>([]);
+  const [state, setState] = useState("loading");
+  useEffect(() => {
+    void listArtists(1, 8)
+      .then((r) => {
+        setArtists(r.data);
+        setState("ready");
+      })
+      .catch(() => setState("error"));
+  }, []);
+  const albums: Album[] = artists
+    .flatMap((a) =>
+      (a.albums ?? []).map((x) => ({
+        ...x,
+        artist: { id: a.id, name: a.name, slug: a.slug },
+      })),
+    )
+    .slice(0, 6);
+  return (
+    <>
+      <SiteHeader />
+      <main className="mx-auto max-w-7xl px-5">
+        <section className="grid min-h-[520px] items-center gap-10 py-20 lg:grid-cols-[1.1fr_.9fr]">
+          <div>
+            <p className="text-sm uppercase tracking-[.25em] text-[var(--accent)]">
+              A quieter way to listen
+            </p>
+            <h1 className="mt-5 max-w-3xl text-6xl font-semibold tracking-[-.04em] sm:text-7xl">
+              Find the sound that stays with you.
+            </h1>
+            <p className="mt-6 max-w-xl text-lg text-[var(--muted)]">
+              Explore published artists and albums, then press play when
+              something feels right.
+            </p>
+            <Link
+              href="/artists"
+              className="mt-9 inline-block rounded-[var(--radius-sm)] bg-[var(--accent)] px-5 py-3 font-semibold text-black"
+            >
+              Browse artists
+            </Link>
+          </div>
+          <div className="hidden aspect-square rounded-[var(--radius-lg)] bg-[radial-gradient(circle_at_30%_20%,#b9f36a33,transparent_45%),linear-gradient(145deg,var(--surface-raised),var(--surface))] lg:block" />
+        </section>
+        <section className="py-12">
+          <div className="mb-6 flex items-end justify-between">
+            <h2 className="text-2xl font-semibold">Artists to explore</h2>
+            <Link
+              href="/artists"
+              className="text-sm text-[var(--muted)] hover:text-white"
+            >
+              View all
+            </Link>
+          </div>
+          {state === "loading" ? (
+            <LoadingState />
+          ) : state === "error" ? (
+            <ErrorState />
+          ) : artists.length ? (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {artists.slice(0, 8).map((a) => (
+                <ArtistCard key={a.id} artist={a} />
+              ))}
+            </div>
+          ) : (
+            <EmptyState label="No published artists are available yet." />
+          )}
+        </section>
+        {albums.length > 0 && (
+          <section className="py-12">
+            <h2 className="mb-6 text-2xl font-semibold">Latest releases</h2>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {albums.map((a) => (
+                <AlbumCard key={a.id} album={a} />
+              ))}
+            </div>
+          </section>
+        )}
+      </main>
+      <Footer />
+    </>
+  );
+}

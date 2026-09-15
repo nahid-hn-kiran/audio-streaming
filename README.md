@@ -119,13 +119,19 @@ cd server
 npm run seed:users
 ```
 
-The demo catalog seed creates four fictional artists, six albums, and twelve tracks. It generates short WAV files locally and sends each one through the real presigned R2 upload, completion verification, media readiness, and publication flow:
+The demo catalog seed creates eight artists, twelve albums, and thirty-six tracks with realistic metadata and eight featured credits. Ten tracks receive generated, playable WAV audio; the remaining tracks stay as draft catalogue records until audio is available. It also creates four coherent playlists with forty track memberships, twenty likes, and forty listening-history records across the existing seeded accounts.
+
+Enable the seed explicitly before running it:
 
 ```bash
+cd server
+$env:DEMO_DATA_ENABLED="true"
 npm run seed:demo
 ```
 
-The seed uses stable slugs and is safe to run repeatedly. Generated files are written to `server/demo-audio/` and are ignored by Git; the seed recreates them as needed. R2 configuration must be present before running it.
+The seed uses stable slugs and is safe to run repeatedly. Existing valid READY audio assets are reused, and no replacement upload is attempted for an inconsistent existing asset. On a fresh database, ten WAV files between roughly one and one-and-a-half minutes are generated locally in `server/demo-audio/` and sent through the real presigned R2 upload, completion verification, media readiness, and publication flow. The generated files are ignored by Git and R2 configuration must be present before running it.
+
+The seed is blocked unless `DEMO_DATA_ENABLED=true`. It is also blocked when `NODE_ENV=production` unless the separate intentional override `DEMO_DATA_ALLOW_PRODUCTION=true` is supplied. Do not provide that override for normal deployments.
 
 ## Admin workflow
 
