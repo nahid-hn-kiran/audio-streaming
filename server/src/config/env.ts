@@ -16,7 +16,7 @@ const environmentSchema = z.object({
   OBJECT_STORAGE_SECRET_ACCESS_KEY: z.string().optional(),
   MAX_AUDIO_UPLOAD_BYTES: z.coerce.number().int().positive().default(104857600),
   UPLOAD_URL_TTL_SECONDS: z.coerce.number().int().positive().max(3600).default(900),
-  PLAYBACK_URL_TTL_SECONDS: z.coerce.number().int().positive().max(3600).default(300),
+  PLAYBACK_URL_TTL_SECONDS: z.coerce.number().int().positive().max(3600).default(3600),
   UPLOAD_CLEANUP_GRACE_SECONDS: z.coerce.number().int().positive().default(86400),
 }).superRefine((values, context) => {
   if (values.NODE_ENV !== "production") return;

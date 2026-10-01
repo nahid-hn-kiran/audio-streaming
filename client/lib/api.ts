@@ -10,10 +10,10 @@ export class ApiError extends Error {
   }
 }
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+// Empty means same-origin: requests go through the Next.js /api rewrite proxy.
+const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 function getApiUrl(path: string): string {
-  if (!apiUrl) throw new Error("NEXT_PUBLIC_API_URL is not configured");
   return `${apiUrl.replace(/\/$/, "")}${path}`;
 }
 

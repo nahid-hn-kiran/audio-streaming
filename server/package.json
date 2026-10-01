@@ -8,7 +8,8 @@
   },
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsup src/server.ts --format esm --platform node --out-dir dist",
+    "postinstall": "prisma generate",
+    "build": "prisma generate && tsup src/app.ts src/server.ts --format esm --platform node --out-dir dist --dts",
     "start": "node dist/server.js",
     "lint": "eslint src prisma.config.ts",
     "test": "node --import ./test/setup.mjs --import tsx --test test/**/*.test.ts",
@@ -17,7 +18,8 @@
     "seed:demo": "node --import tsx prisma/seed-demo.ts",
     "typecheck": "tsc --noEmit",
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev"
+    "prisma:migrate": "prisma migrate dev",
+    "migrate:deploy": "prisma migrate deploy"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1119.0",

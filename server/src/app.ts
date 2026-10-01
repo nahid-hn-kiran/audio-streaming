@@ -14,6 +14,9 @@ import { uploadRateLimit } from "./middleware/rate-limit.js";
 
 export const app = express();
 
+// Trust the first proxy hop (Vercel/Render load balancer) so req.ip is the client IP.
+app.set("trust proxy", 1);
+
 app.disable("x-powered-by");
 app.use(
   cors({
@@ -62,3 +65,5 @@ app.use(
     });
   },
 );
+
+export default app;

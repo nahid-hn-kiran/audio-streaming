@@ -1,0 +1,2 @@
+# Build output (Vercel builds on deploy)
+dist/
